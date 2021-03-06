@@ -169,7 +169,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/musicapi/dev/1614666261287-2021-03-02T06:24:21.287Z/musicapi.zip"
+          "S3Key": "serverless/musicapi/dev/1615014544398-2021-03-06T07:09:04.398Z/musicapi.zip"
         },
         "Handler": "handler.api",
         "Runtime": "nodejs12.x",
@@ -192,14 +192,14 @@
         "HelloLogGroup"
       ]
     },
-    "HelloLambdaVersion3WhyQ2sC18VDCWciwc8OC1kO8XUikWmyc5tPwP4": {
+    "HelloLambdaVersionZXWdfrurIEov9L9oyDwbL6xT0y7zykHrJHpplo7IY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HelloLambdaFunction"
         },
-        "CodeSha256": "EsKANtmuDzx+o2noAzPENDDPR1QyNET8KD3bedO3bnQ="
+        "CodeSha256": "gDfPJvRlbsiW8nvnVmiF4FrSHAxi83+avvp1OIweY+A="
       }
     },
     "ApiGatewayRestApi": {
@@ -272,7 +272,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1614666232810": {
+    "ApiGatewayDeployment1615014475091": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -331,7 +331,7 @@
     "HelloLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersion3WhyQ2sC18VDCWciwc8OC1kO8XUikWmyc5tPwP4"
+        "Ref": "HelloLambdaVersionZXWdfrurIEov9L9oyDwbL6xT0y7zykHrJHpplo7IY"
       }
     },
     "ServiceEndpoint": {

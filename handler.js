@@ -7,56 +7,87 @@ const path = require('path')
 
 var app = express()
 
-app.get('/artists', function(req, res){
+app.get('/genres', function (req, res){
 
-  const bucketParams = {
-      Bucket: 'cs493bucket',
-      Delimiter: '/',
-      Prefix: 'Artists/',
-  };
+  var ddb = new AWS.DynamoDB({region: 'us-east-1'});
 
-  var artists = []
-
-  var s3 = new AWS.S3();
-  s3.listObjectsV2(bucketParams, function(err, data){
-       
-    if(err){res.send(err);return}
-    for(var i = 0; i < data.CommonPrefixes.length; i++){
-
-      var name = data.CommonPrefixes[i].Prefix
-      name = name.substring(
-      name.indexOf("/") +1,
-      name.lastIndexOf("/"),
-      )
-      artists.push(name)
+    var params = {
+      TableName: 'music',
+      AttributesToGet:['Genres']
     }
-    res.send(JSON.stringify(artists))
+
+    ddb.scan(params, function(err, data){
+      if(err){console.log(err)}
+      else{
+        var genres = {Genres: []}
+        data.Items.forEach(function(element){
+          var g = AWS.DynamoDB.Converter.unmarshall(element).Genres
+          if(!genres.Genres.includes(g)){
+            genres.Genres.push(g);
+          }
+        })
+        res.send(genres)
+      }
+    })
+})
+
+app.get('/artists/for/genre', function(req,res){
+
+  var genre = req.query.genre;
+
+  var ddb = new AWS.DynamoDB({region: 'us-east-1'});
+
+  var params = {
+    TableName: 'music',
+    KeyConditions: {
+      'Genres':{
+        'ComparisonOperator': 'EQ',
+        'AttributeValueList': [{'S' :genre}]
+      }
+    },
+  }
+
+  ddb.query(params, function(err, data){
+    if(err){console.log(err)}
+    else{
+
+      var artists = {Artists: []}
+      data.Items.forEach(function(element){
+        var g = AWS.DynamoDB.Converter.unmarshall(element).Artists
+        if(!artists.Artists.includes(g)){
+          artists.Artists.push(g);
+        }
+      })
+      res.send(artists)
+    }
+  })
+});
+
+app.get('/albums/for/artist', function(req,res){
+
+  var artist = req.query.artist;
+
+  var ddb = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
+
+  var params = {
+    TableName: 'music',
+    FilterExpression: 'Artists = :a',
+    ExpressionAttributeValues:{
+      ':a':artist
+    },
+    ProjectionExpression: 'Albums'
+  }
+
+  ddb.scan(params, function(err, data){
+    if(err){console.log(err)}
+    else{
+      res.send(data.Items[0])
+    }
   });
 });
 
-app.get('/albums', function(req, res){
+app.get('/songs/for/album', function(req,res){
 
-  const bucketParams = {
-      Bucket: 'cs493bucket',
-      Prefix: 'Artists/' + req.query.artist + "/",
-  };
+});
 
-  var albums = []
-
-  var s3 = new AWS.S3();
-  s3.listObjectsV2(bucketParams, function(err, data){
-       
-    if(err){res.send(err);return}
-    for(var i = 0; i < data.CommonPrefixes.length; i++){
-
-      var name = data.CommonPrefixes[i].Prefix
-      name = name.substring(
-      name.indexOf("/") +1,
-      name.lastIndexOf("/"),
-      )
-      albums.push(name)
-    }
-    res.send(JSON.stringify(data))
-  });
-}); 
 module.exports.api = handler(app);

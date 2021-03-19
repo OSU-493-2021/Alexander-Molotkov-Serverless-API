@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/musicapi-dev-hello"
       }
     },
+    "LogLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/musicapi-dev-log"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -141,6 +147,17 @@
                     "s3:GetObject"
                   ],
                   "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": [
+                    "arn:aws:sqs:us-east-1:751454240071:music"
+                  ]
                 }
               ]
             }
@@ -169,7 +186,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/musicapi/dev/1615014544398-2021-03-06T07:09:04.398Z/musicapi.zip"
+          "S3Key": "serverless/musicapi/dev/1616124868818-2021-03-19T03:34:28.818Z/musicapi.zip"
         },
         "Handler": "handler.api",
         "Runtime": "nodejs12.x",
@@ -192,14 +209,54 @@
         "HelloLogGroup"
       ]
     },
-    "HelloLambdaVersionZXWdfrurIEov9L9oyDwbL6xT0y7zykHrJHpplo7IY": {
+    "LogLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/musicapi/dev/1616124868818-2021-03-19T03:34:28.818Z/musicapi.zip"
+        },
+        "Handler": "handler.log",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "musicapi-dev-log",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "SERVERLESS_EXPRESS_PLATFORM": "aws"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "LogLogGroup"
+      ]
+    },
+    "HelloLambdaVersionO6v5xvTWD0Vj7kUlXc8irBu6zlMmiG9aVmg4zVA0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HelloLambdaFunction"
         },
-        "CodeSha256": "gDfPJvRlbsiW8nvnVmiF4FrSHAxi83+avvp1OIweY+A="
+        "CodeSha256": "JKq28k4/sddJqRVeuUXl/Cx2T7GdF6qBCJa74fhBNlQ="
+      }
+    },
+    "LogLambdaVersionIKAmI1Gzp3CICwLhFDsHBeBSEZbFb0ugc1bV8INE": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "LogLambdaFunction"
+        },
+        "CodeSha256": "JKq28k4/sddJqRVeuUXl/Cx2T7GdF6qBCJa74fhBNlQ="
       }
     },
     "ApiGatewayRestApi": {
@@ -272,7 +329,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1615014475091": {
+    "ApiGatewayDeployment1616124833820": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -320,6 +377,23 @@
           ]
         }
       }
+    },
+    "LogEventSourceMappingSQSMusic": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [
+        "IamRoleLambdaExecution"
+      ],
+      "Properties": {
+        "BatchSize": 10,
+        "EventSourceArn": "arn:aws:sqs:us-east-1:751454240071:music",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LogLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Enabled": true
+      }
     }
   },
   "Outputs": {
@@ -331,7 +405,13 @@
     "HelloLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersionZXWdfrurIEov9L9oyDwbL6xT0y7zykHrJHpplo7IY"
+        "Ref": "HelloLambdaVersionO6v5xvTWD0Vj7kUlXc8irBu6zlMmiG9aVmg4zVA0"
+      }
+    },
+    "LogLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "LogLambdaVersionIKAmI1Gzp3CICwLhFDsHBeBSEZbFb0ugc1bV8INE"
       }
     },
     "ServiceEndpoint": {
